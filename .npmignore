@@ -4,6 +4,7 @@ node_modules
 .DS_Store
 bundle.js
 test
+noise.mp3
 test.js
 datauri.js
 demo/

@@ -1,4 +1,5 @@
 var once = require('once')
+var noise = require('./lib/noise')
 var STORAGE_KEY = 'detect-media-element-source-result'
 
 module.exports = detectMediaElementSource
@@ -66,7 +67,7 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
 
   audio.loop = true
   audio.crossOrigin = 'Anonymous'
-  audio.src = getDataUri()
+  audio.src = noise
   audio.load()
   audio.play()
 
@@ -83,8 +84,4 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
     }
     return false
   }
-}
-
-function getDataUri () {
-  return 'data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACiwCOjo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6O//////////////////////////////////////////////////////////////////8AAAAKTEFNRTMuOThyBF8AAAAAAAAAABQgJAaUQQABmgAAAovlBTTIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sgxAAAApQBmeAAACESBK64l5ghCwAAAAAAAAOAL////////h71g+D71UzmwqFq6AFgSBzA5gcwSIeouRpK0uKpR5smgoUFdBQZ/goKd/+EgoK7kUFBf/8QUFCn/9ooKC/iCiv6Cu///IKCQUUqTEFNRTMuOTguMqqqqqqqqqqqqv/7EMQJg8AAAaQAAAAgAAA0gAAABKq'
 }

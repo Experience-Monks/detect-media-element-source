@@ -16,7 +16,8 @@
     "datauri": "^0.8.0"
   },
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "mp3": "node datauri > lib/noise.js"
   },
   "keywords": [
     "test",
