@@ -1,6 +1,6 @@
 {
   "name": "detect-media-element-source",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "detects whether the browser supports WebAudio music streaming",
   "main": "index.js",
   "license": "MIT",
