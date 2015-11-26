@@ -6,7 +6,7 @@ Detects whether the browser correctly supports WebAudio's `createMediaElementSou
 
 For example: Desktop Chrome/FF support media element sources, but mobile iOS 9.2 Safari does not. In unsupported browsers, you need to buffer and decode the entire audio file in order to use it with the WebAudio API.
 
-The result is peristed in `localStorage` in order to fix a [Chrome DataURI caching issue](https://code.google.com/p/chromium/issues/detail?id=562214).
+The result is peristed in `sessionStorage` in order to fix a [Chrome DataURI caching issue](https://code.google.com/p/chromium/issues/detail?id=562214).
 
 ## Install
 
@@ -40,7 +40,7 @@ Detects whether `createMediaElementSource` works as expected with the WebAudio A
 
 `timeoutDelay` defaults to 250ms, but can be configured to allow the loop to play for a longer/shorter time before deciding the result.
 
-If `ignoreCache` is specified, the function will not read or write from localStorage. This exists specifically to fix a recent Chrome issue, and the functionality may be removed in later versions of this module.
+If `ignoreCache` is specified, the function will not read or write from sessionStorage. This exists specifically to fix a recent Chrome issue, and the functionality may be removed in later versions of this module.
 
 ## License
 
