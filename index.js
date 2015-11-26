@@ -17,7 +17,9 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
 
   // Horribly ugly Chrome-specific hack until the following bug is fixed:
   // https://code.google.com/p/chromium/issues/detail?id=562214
-  if (!ignoreCache && String(window.localStorage.getItem(STORAGE_KEY)) === 'true') {
+  if (!ignoreCache &&
+      window.sessionStorage &&
+      String(window.sessionStorage.getItem(STORAGE_KEY)) === 'true') {
     return process.nextTick(function () {
       cb(true)
     })
@@ -43,8 +45,8 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
     audio.pause()
     audio.src = ''
     node.disconnect()
-    if (!ignoreCache) {
-      window.localStorage.setItem(STORAGE_KEY, String(result))
+    if (!ignoreCache && window.sessionStorage) {
+      window.sessionStorage.setItem(STORAGE_KEY, String(result))
     }
     done(result)
   })
