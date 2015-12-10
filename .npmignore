@@ -5,6 +5,7 @@ node_modules
 bundle.js
 test
 noise.mp3
+noise.ogg
 test.js
 datauri.js
 demo/

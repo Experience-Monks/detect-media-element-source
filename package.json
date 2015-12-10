@@ -17,7 +17,8 @@
   },
   "scripts": {
     "test": "node test.js",
-    "mp3": "node datauri > lib/noise.js"
+    "mp3": "node datauri noise.mp3 > lib/mp3.js",
+    "ogg": "node datauri noise.ogg > lib/ogg.js"
   },
   "keywords": [
     "test",

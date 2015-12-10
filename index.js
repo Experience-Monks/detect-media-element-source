@@ -1,5 +1,6 @@
 var once = require('once')
-var noise = require('./lib/noise')
+var mp3 = require('./lib/mp3')
+var ogg = require('./lib/ogg')
 var STORAGE_KEY = 'detect-media-element-source-result'
 
 module.exports = detectMediaElementSource
@@ -69,7 +70,7 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
 
   audio.loop = true
   audio.crossOrigin = 'Anonymous'
-  audio.src = noise
+  audio.src = mp3
   audio.load()
   audio.play()
 

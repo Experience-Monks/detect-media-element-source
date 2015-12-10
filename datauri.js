@@ -1,1 +1,1 @@
-console.log('module.exports = "' + require('datauri')('noise.mp3') + '";')
+console.log('module.exports = "' + require('datauri')(process.argv[2]) + '";')
