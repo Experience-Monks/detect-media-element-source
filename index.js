@@ -17,13 +17,13 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
 
   // Horribly ugly Chrome-specific hack until the following bug is fixed:
   // https://code.google.com/p/chromium/issues/detail?id=562214
-  if (!ignoreCache &&
-      window.sessionStorage &&
-      String(window.sessionStorage.getItem(STORAGE_KEY)) === 'true') {
-    return process.nextTick(function () {
-      cb(true)
-    })
-  }
+  // if (!ignoreCache &&
+  //     window.sessionStorage &&
+  //     String(window.sessionStorage.getItem(STORAGE_KEY)) === 'true') {
+  //   return process.nextTick(function () {
+  //     cb(true)
+  //   })
+  // }
 
   var tempContext = false
   if (!audioContext) {
@@ -32,6 +32,11 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
   }
 
   timeoutDelay = typeof timeoutDelay === 'number' ? timeoutDelay : 250
+
+  if (audioContext.state === 'suspended' &&
+      typeof audioContext.resume === 'function') {
+    audioContext.resume()
+  }
 
   var audio = new window.Audio()
   var node = audioContext.createMediaElementSource(audio)
@@ -45,9 +50,9 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
     audio.pause()
     audio.src = ''
     node.disconnect()
-    if (!ignoreCache && window.sessionStorage) {
-      window.sessionStorage.setItem(STORAGE_KEY, String(result))
-    }
+    // if (!ignoreCache && window.sessionStorage) {
+    //   window.sessionStorage.setItem(STORAGE_KEY, String(result))
+    // }
     done(result)
   })
 

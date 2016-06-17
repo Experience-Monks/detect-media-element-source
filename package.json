@@ -13,11 +13,16 @@
     "once": "^1.3.3"
   },
   "devDependencies": {
-    "datauri": "^0.8.0"
+    "budo": "^8.3.0",
+    "urify": "^2.0.2",
+    "wav": "^1.0.0"
   },
   "scripts": {
     "test": "node test.js",
-    "mp3": "node datauri > lib/noise.js"
+    "mp3": "node datauri > lib/noise.js",
+    "noise": "node tools/write-noise.js && npm run convert && node tools/datauri.js > lib/noise.js",
+    "convert": "ffmpeg -i tools/output.wav -codec:a libmp3lame -qscale:a 4 tools/noise.mp3",
+    "start": "budo test.js --live"
   },
   "keywords": [
     "test",
