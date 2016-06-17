@@ -1,6 +1,5 @@
 var once = require('once')
-var noise = require('./lib/noise')
-var STORAGE_KEY = 'detect-media-element-source-result'
+var bufferToWav = require('audiobuffer-to-wav')
 
 module.exports = detectMediaElementSource
 function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) {
@@ -9,21 +8,15 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
   }
 
   var AudioCtor = window.AudioContext || window.webkitAudioContext
-  if (!AudioCtor) { // no WebAudio support
+  if (!AudioCtor ||
+      typeof window.Blob === 'undefined' ||
+      typeof window.URL === 'undefined' ||
+      typeof window.URL.createObjectURL !== 'function') {
+    // will not support our method, assume browser is too old
     return process.nextTick(function () {
       cb(false)
     })
   }
-
-  // Horribly ugly Chrome-specific hack until the following bug is fixed:
-  // https://code.google.com/p/chromium/issues/detail?id=562214
-  // if (!ignoreCache &&
-  //     window.sessionStorage &&
-  //     String(window.sessionStorage.getItem(STORAGE_KEY)) === 'true') {
-  //   return process.nextTick(function () {
-  //     cb(true)
-  //   })
-  // }
 
   var tempContext = false
   if (!audioContext) {
@@ -50,9 +43,6 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
     audio.pause()
     audio.src = ''
     node.disconnect()
-    // if (!ignoreCache && window.sessionStorage) {
-    //   window.sessionStorage.setItem(STORAGE_KEY, String(result))
-    // }
     done(result)
   })
 
@@ -72,11 +62,20 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
     }, 1)
   }))
 
-  audio.loop = true
-  audio.crossOrigin = 'Anonymous'
-  audio.src = noise
-  audio.load()
-  audio.play()
+  var buffer = createNoise(0.1, 44100)
+  var bytes = bufferToWav(buffer)
+
+  try {
+    var blob = new window.Blob([ bytes ], { type: 'audio/wav' })
+    var url = window.URL.createObjectURL(blob)
+    audio.loop = true
+    audio.crossOrigin = 'Anonymous'
+    audio.src = url
+    audio.load()
+    audio.play()
+  } catch (e) {
+    ended(false)
+  }
 
   function done (result) {
     if (tempContext && typeof audioContext.close === 'function') {
@@ -90,5 +89,26 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
       if (array[i] > 0) return true
     }
     return false
+  }
+
+  function createNoise (seconds, sampleRate) {
+    var sampleCount = Math.floor(sampleRate * seconds)
+    sampleCount += 4 - (sampleCount % 4)
+
+    var samples = new Float32Array(sampleCount)
+    for (var i = 0; i < samples.length; i++) {
+      samples[i] = Math.sin(i * 0.04)
+      if (samples[i] === 0) samples[i] = 0.025
+    }
+
+    return {
+      duration: seconds,
+      length: sampleCount,
+      numberOfChannels: 1,
+      sampleRate: sampleRate,
+      getChannelData: function () {
+        return samples
+      }
+    }
   }
 }

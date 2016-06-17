@@ -10,6 +10,7 @@
     "url": "https://github.com/mattdesl"
   },
   "dependencies": {
+    "audiobuffer-to-wav": "^1.0.0",
     "once": "^1.3.3"
   },
   "devDependencies": {
@@ -21,8 +22,8 @@
     "test": "node test.js",
     "mp3": "node datauri > lib/noise.js",
     "noise": "node tools/write-noise.js && npm run convert && node tools/datauri.js > lib/noise.js",
-    "convert": "ffmpeg -i tools/output.wav -codec:a libmp3lame -qscale:a 4 tools/noise.mp3",
-    "start": "budo test.js --live"
+    "convert": "ffmpeg -i tools/output.wav -y -codec:a libmp3lame -b 64k tools/noise.mp3",
+    "start": "budo test.js --live -- -t brfs"
   },
   "keywords": [
     "test",
