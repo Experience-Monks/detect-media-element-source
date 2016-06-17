@@ -12,6 +12,7 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
       typeof window.Blob === 'undefined' ||
       typeof window.URL === 'undefined' ||
       typeof window.URL.createObjectURL !== 'function') {
+    console.log('no support')
     // will not support our method, assume browser is too old
     return process.nextTick(function () {
       cb(false)
@@ -24,57 +25,71 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
     audioContext = new AudioCtor()
   }
 
-  timeoutDelay = typeof timeoutDelay === 'number' ? timeoutDelay : 250
+  var defaultDelay = /Safari/.test(navigator.userAgent) ? 550 : 250
+  timeoutDelay = typeof timeoutDelay === 'number' ? timeoutDelay : defaultDelay
 
   if (audioContext.state === 'suspended' &&
       typeof audioContext.resume === 'function') {
+    // Safari 9 may start in a suspended state :(
     audioContext.resume()
+    setTimeout(runDetection, 10)
+  } else {
+    runDetection()
   }
 
-  var audio = new window.Audio()
-  var node = audioContext.createMediaElementSource(audio)
-  var analyser = audioContext.createAnalyser()
-  node.connect(analyser)
+  function runDetection () {
+    var audio = new window.Audio()
+    var node = audioContext.createMediaElementSource(audio)
+    var analyser = audioContext.createAnalyser()
+    node.connect(analyser)
 
-  var interval, timeout
-  var ended = once(function (result) {
-    clearInterval(interval)
-    clearTimeout(timeout)
-    audio.pause()
-    audio.src = ''
-    node.disconnect()
-    done(result)
-  })
+    var interval, timeout
+    var ended = once(function (result) {
+      clearInterval(interval)
+      clearTimeout(timeout)
+      audio.pause()
+      // audio.src = ''
+      node.disconnect()
+      done(result)
+    })
 
-  timeout = setTimeout(function () {
-    ended(false)
-  }, timeoutDelay)
+    audio.addEventListener('canplaythrough', once(function () {
+      audio.play()
+    }))
 
-  // when playback begins, we sum the frequency data
-  audio.addEventListener('play', once(function () {
-    var array = new Uint8Array(analyser.frequencyBinCount)
-    interval = setInterval(function () {
-      analyser.getByteFrequencyData(array)
-      // as soon as we hit non-zero, we stop
-      if (hasNonZero(array)) {
-        ended(true)
-      }
-    }, 1)
-  }))
+    // when playback begins, we sum the frequency data
+    audio.addEventListener('play', once(function () {
+      var array = new Uint8Array(analyser.frequencyBinCount)
+      interval = setInterval(function () {
+        analyser.getByteFrequencyData(array)
 
-  var buffer = createNoise(0.1, 44100)
-  var bytes = bufferToWav(buffer)
+        // as soon as we hit non-zero, we stop
+        if (hasNonZero(array)) {
+          ended(true)
+        }
+      }, 1)
+    }))
 
-  try {
-    var blob = new window.Blob([ bytes ], { type: 'audio/wav' })
-    var url = window.URL.createObjectURL(blob)
-    audio.loop = true
-    audio.crossOrigin = 'Anonymous'
-    audio.src = url
-    audio.load()
-    audio.play()
-  } catch (e) {
-    ended(false)
+    var buffer = createNoise(1, 44100)
+    var bytes = bufferToWav(buffer)
+    resetTimeout()
+
+    try {
+      var blob = new window.Blob([ bytes ], { type: 'audio/wav' })
+      var url = window.URL.createObjectURL(blob)
+      audio.loop = true
+      audio.src = url
+      audio.load()
+    } catch (e) {
+      ended(false)
+    }
+
+    function resetTimeout () {
+      if (timeout) clearTimeout(timeout)
+      timeout = setTimeout(function () {
+        ended(false)
+      }, timeoutDelay)
+    }
   }
 
   function done (result) {
@@ -92,18 +107,17 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
   }
 
   function createNoise (seconds, sampleRate) {
-    var sampleCount = Math.floor(sampleRate * seconds)
-    sampleCount += 4 - (sampleCount % 4)
+    var totalSamples = Math.floor(sampleRate * seconds)
+    totalSamples += 4 - (totalSamples % 4) // byte-align
 
-    var samples = new Float32Array(sampleCount)
-    for (var i = 0; i < samples.length; i++) {
-      samples[i] = Math.sin(i * 0.04)
-      if (samples[i] === 0) samples[i] = 0.025
+    var samples = new Float32Array(totalSamples)
+    for (var i = 0; i < totalSamples; i++) {
+      samples[i] = 1 / 255
     }
 
     return {
       duration: seconds,
-      length: sampleCount,
+      length: totalSamples,
       numberOfChannels: 1,
       sampleRate: sampleRate,
       getChannelData: function () {
