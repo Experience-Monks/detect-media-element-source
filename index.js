@@ -12,7 +12,6 @@ function detectMediaElementSource (cb, audioContext, timeoutDelay, ignoreCache) 
       typeof window.Blob === 'undefined' ||
       typeof window.URL === 'undefined' ||
       typeof window.URL.createObjectURL !== 'function') {
-    console.log('no support')
     // will not support our method, assume browser is too old
     return process.nextTick(function () {
       cb(false)
